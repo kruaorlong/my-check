@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบส่งงานออนไลน์</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        /* === การตั้งค่าและตัวแปร CSS === */
+        :root {
+            --primary-color: #007bff; /* สีน้ำเงินฟ้าสดใส */
+            --secondary-color: #6c757d;
+            --background-start: #e3ffe7;
+            --background-end: #d9e7ff;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --text-color: #333;
+            --header-text: #4a4a4a;
+            --border-color: #d1d9e6;
+            --shadow-light: rgba(0, 0, 0, 0.1);
+            --border-radius: 16px;
+            --font-family: 'Prompt', sans-serif;
+        }
+
+        /* === Reset & Global Styles === */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            font-family: var(--font-family);
+            background: linear-gradient(90deg, var(--background-start) 0%, var(--background-end) 100%);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding-top: 150px; /* เพิ่มพื้นที่สำหรับ Header ที่เป็น fixed */
+        }
+        .container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        /* === Header & Navigation === */
+        header {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 0;
+            text-align: center;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+        }
+        header .logo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        header img {
+            width: 120px;
+            height: auto;
+        }
+        header h1 {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: var(--header-text);
+        }
+        nav {
+            margin-top: 1rem;
+            border-top: 1px solid var(--border-color);
+            padding-top: 1rem;
+        }
+        nav a {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--primary-color);
+            text-decoration: none;
+            margin: 0 15px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        nav a:hover, nav a.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        /* === Section & Card Styling === */
+        .section-card {
+            background: var(--card-bg);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 20px var(--shadow-light);
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(5px);
+        }
+        .section-card h2 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 0.5rem;
+        }
+        .section-card h2 .icon {
+            font-size: 1.5rem;
+        }
+
+        /* === Form Elements === */
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        .form-control {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-family: var(--font-family);
+            font-size: 1rem;
+            background-color: #fff;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        
+        /* Custom File Input */
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+        .file-input-button {
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            background-color: #f8f9fa;
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+        }
+        .file-input-wrapper input[type=file] {
+            font-size: 100px;
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+        #file-name {
+            margin-top: 0.5rem;
+            font-style: italic;
+            color: var(--secondary-color);
+            font-size: 0.9rem;
+        }
+
+        /* === Button === */
+        .btn {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-family: var(--font-family);
+            font-size: 1.1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            width: 100%;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+        .btn:disabled {
+            background-color: #a0c7ff;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* === Teacher & Dashboard Section === */
+        #teacher-login-view, #teacher-dashboard-view {
+            text-align: center;
+        }
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .stat-card {
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 10px var(--shadow-light);
+        }
+        .stat-card .value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        .stat-card .label {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--secondary-color);
+        }
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        th {
+            background-color: #f2f6ff;
+            font-weight: 600;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        tr:hover {
+            background-color: #e9efff;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-align: center;
+        }
+        .status.sent { background-color: #fff3cd; color: #856404; } /* รอตรวจ */
+        .status.checked { background-color: #d4edda; color: #155724; } /* ตรวจแล้ว */
+        .status.late { background-color: #f8d7da; color: #721c24; } /* ยังไม่ส่ง */
+
+        .score-input {
+            width: 70px;
+            padding: 5px;
+            border-radius: 5px;
+            border: 1px solid var(--border-color);
+        }
+        .comment-input {
+            width: 100%;
+            min-width: 150px;
+            padding: 5px;
+            border-radius: 5px;
+            border: 1px solid var(--border-color);
+        }
+        .update-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .update-btn:hover { background-color: #218838; }
+
+        /* === Footer === */
+        footer {
+            text-align: center;
+            padding: 2rem 1rem;
+            margin-top: 2rem;
+            font-size: 0.9rem;
+            color: var(--secondary-color);
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* === Responsive Design === */
+        @media (max-width: 768px) {
+            body { padding-top: 180px; }
+            header h1 { font-size: 1rem; }
+            nav {
+                display: flex;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            nav a { margin: 5px; }
+            .form-grid { grid-template-columns: 1fr; }
+            .section-card { padding: 1.5rem; }
+            .section-card h2 { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-container">
+            <img src="https://img5.pic.in.th/file/secure-sv1/logo-.a1bcf67c6102bf97.png" alt="Logo">
+            <h1>ระบบส่งงานออนไลน์ – วิชาการใช้เทคโนโลยีดิจิทัลเพื่ออาชีพ</h1>
+        </div>
+        <nav>
+            <a href="#submission-section">📝 ส่งงาน</a>
+            <a href="#teacher-section">👩‍🏫 แดชบอร์ดครู</a>
+            <a href="#stats-section">📊 สถิติการส่งงาน</a>
+        </nav>
+    </header>
+
+    <main class="container">
+
+        <section id="submission-section" class="section-card">
+            <h2><span class="icon">📁</span>ฟอร์มส่งงานของนักเรียน</h2>
+            <form id="submissionForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="studentId">เลขที่</label>
+                        <input type="number" id="studentId" name="เลขที่" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="studentName">ชื่อ-นามสกุล (มีคำนำหน้า)</label>
+                        <input type="text" id="studentName" name="ชื่อ-นามสกุล" class="form-control" required>
+                    </div>
+                </div>
+                <div class="form-grid">
+                     <div class="form-group">
+                        <label for="studentClass">ชั้น/ห้อง</label>
+                        <select id="studentClass" name="ชั้น/ห้อง" class="form-control" required>
+                            <option value="">-- เลือกชั้น/ห้อง --</option>
+                            <optgroup label="ปวช. 1">
+                                <option value="ปวช.1/1">ปวช.1/1</option>
+                                <option value="ปวช.1/2">ปวช.1/2</option>
+                            </optgroup>
+                            <optgroup label="ปวช. 2">
+                                <option value="ปวช.2/1">ปวช.2/1</option>
+                                <option value="ปวช.2/2">ปวช.2/2</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="assignment">ชิ้นงานที่ส่ง</label>
+                        <select id="assignment" name="ชิ้นงานที่ส่ง" class="form-control" required>
+                            <option value="">-- เลือกชิ้นงาน --</option>
+                            </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="description">คำอธิบายเพิ่มเติม (ถ้ามี)</label>
+                    <textarea id="description" name="description" rows="3" class="form-control"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="link">ลิงก์ผลงาน (เช่น Google Drive, Canva, YouTube)</label>
+                    <input type="url" id="link" name="link" class="form-control" placeholder="https://...">
+                </div>
+                <div class="form-group">
+                    <label for="fileUpload">แนบไฟล์ (ถ้ามี)</label>
+                    <div class="file-input-wrapper">
+                         <button type="button" class="file-input-button">เลือกไฟล์...</button>
+                         <input type="file" id="fileUpload" name="fileUpload">
+                    </div>
+                    <p id="file-name">ยังไม่ได้เลือกไฟล์</p>
+                </div>
+                <button type="submit" id="submitBtn" class="btn">ส่งงาน</button>
+            </form>
+        </section>
+
+        <section id="teacher-section" class="section-card">
+            <h2><span class="icon">⭐</span>ระบบครูตรวจงานและให้คะแนน</h2>
+            <div id="teacher-login-view">
+                <p>ส่วนนี้สำหรับครูผู้สอนเท่านั้น กรุณาใส่รหัสผ่านเพื่อเข้าถึง</p>
+                <div class="form-group" style="max-width: 300px; margin: 1.5rem auto 0;">
+                    <input type="password" id="teacher-password" class="form-control" placeholder="รหัสผ่าน">
+                </div>
+                <button id="login-btn" class="btn" style="max-width: 300px; margin-top: 1rem;">เข้าสู่ระบบ</button>
+            </div>
+            <div id="teacher-dashboard-view" style="display: none;">
+                <p>ยินดีต้อนรับ! คุณครูสามารถตรวจและให้คะแนนงานของนักเรียนได้ที่นี่</p>
+                <button id="refresh-btn" class="btn" style="max-width: 200px; margin: 1rem auto; background-color: #6c757d;">รีเฟรชข้อมูล</button>
+                <div class="table-responsive">
+                    <table id="teacher-table">
+                        <thead>
+                            <tr>
+                                <th>เวลาส่ง</th>
+                                <th>ชื่อ-สกุล</th>
+                                <th>ชิ้นงาน</th>
+                                <th>ไฟล์แนบ</th>
+                                <th>สถานะ</th>
+                                <th>คะแนน</th>
+                                <th>ความคิดเห็น</th>
+                                <th>จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section id="stats-section" class="section-card">
+            <h2><span class="icon">📈</span>แดชบอร์ดแสดงผลการส่งงาน</h2>
+            <div id="dashboard-content">
+                <div class="dashboard-stats">
+                    <div class="stat-card">
+                        <div class="value" id="total-submissions">0</div>
+                        <div class="label">ส่งงานทั้งหมด</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="value" id="checked-submissions">0</div>
+                        <div class="label">✅ ตรวจแล้ว</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="value" id="pending-submissions">0</div>
+                        <div class="label">🟡 รอตรวจ</div>
+                    </div>
+                     <div class="stat-card">
+                        <div class="value" id="average-score">0</div>
+                        <div class="label">⭐ คะแนนเฉลี่ย</div>
+                    </div>
+                </div>
+                <p style="text-align: center; color: var(--secondary-color);">* ข้อมูลอัปเดตแบบ Real-time *</p>
+            </div>
+        </section>
+
+    </main>
+
+    <footer>
+        <p>พัฒนาโดย ครูอ้อ :: ฤทัยรัตน์ คำดี | วิทยาลัยการอาชีพลอง</p>
+        <p>© 2025 ระบบส่งงานออนไลน์</p>
+    </footer>
+
+    <script>
+        // ⭐ === การตั้งค่า Frontend === ⭐
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxg8A1Wli7N1z4WvjG4nXMc6VJ5ZTr6WAwNnOfW7NaizG5mp4DDXOAYiKNLwQtAkP-y7Q/exec'; // 🎯 ใส่ Web App URL ของคุณที่นี่
+        const TOTAL_ASSIGNMENTS = 20; // จำนวนชิ้นงานทั้งหมด
+        // ===================================
+
+        // Global state
+        let allSubmissionsData = [];
+        let isTeacherLoggedIn = false;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Elements ---
+            const form = document.getElementById('submissionForm');
+            const submitBtn = document.getElementById('submitBtn');
+            const assignmentSelect = document.getElementById('assignment');
+            const fileInput = document.getElementById('fileUpload');
+            const fileNameDisplay = document.getElementById('file-name');
+            const loginBtn = document.getElementById('login-btn');
+            const passwordInput = document.getElementById('teacher-password');
+            const loginView = document.getElementById('teacher-login-view');
+            const dashboardView = document.getElementById('teacher-dashboard-view');
+            const refreshBtn = document.getElementById('refresh-btn');
+            
+            // --- Populate assignment options ---
+            for (let i = 1; i <= TOTAL_ASSIGNMENTS; i++) {
+                const option = document.createElement('option');
+                option.value = `งานที่ ${i}`;
+                option.textContent = `งานที่ ${i}`;
+                assignmentSelect.appendChild(option);
+            }
+
+            // --- Display selected file name ---
+            fileInput.addEventListener('change', () => {
+                fileNameDisplay.textContent = fileInput.files.length > 0 ? fileInput.files[0].name : 'ยังไม่ได้เลือกไฟล์';
+            });
+            
+            // --- Form Submission Handler ---
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                submitBtn.disabled = true;
+                Swal.fire({
+                    title: 'กำลังส่งงาน...',
+                    text: 'กรุณารอสักครู่ ระบบกำลังบันทึกข้อมูล',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                const formData = new FormData(form);
+                const searchParams = new URLSearchParams();
+
+                for (const pair of formData.entries()) {
+                    searchParams.append(pair[0], pair[1]);
+                }
+
+                // Handle file upload by converting to Base64
+                if (fileInput.files.length > 0) {
+                    const file = fileInput.files[0];
+                    const base64 = await toBase64(file);
+                    searchParams.append('fileData', base64);
+                    searchParams.append('fileName', file.name);
+                    searchParams.append('mimeType', file.type);
+                }
+                
+                try {
+                    const response = await fetch(SCRIPT_URL, {
+                        method: 'POST',
+                        body: searchParams
+                    });
+                    const result = await response.json();
+                    
+                    if (result.status === 'success') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'ส่งงานสำเร็จ!',
+                            text: result.message,
+                        });
+                        form.reset();
+                        fileNameDisplay.textContent = 'ยังไม่ได้เลือกไฟล์';
+                        loadAllData(); // Refresh data
+                    } else {
+                        throw new Error(result.message);
+                    }
+                } catch (error) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                        text: 'ไม่สามารถส่งงานได้: ' + error.message,
+                    });
+                } finally {
+                    submitBtn.disabled = false;
+                }
+            });
+
+            // --- Teacher Login Handler ---
+            loginBtn.addEventListener('click', async () => {
+                const password = passwordInput.value;
+                if (!password) {
+                    Swal.fire('ข้อผิดพลาด', 'กรุณาใส่รหัสผ่าน', 'warning');
+                    return;
+                }
+                
+                const searchParams = new URLSearchParams({ action: 'login', password: password });
+
+                try {
+                     const response = await fetch(SCRIPT_URL, { method: 'POST', body: searchParams });
+                     const result = await response.json();
+                     if (result.status === 'success') {
+                        isTeacherLoggedIn = true;
+                        loginView.style.display = 'none';
+                        dashboardView.style.display = 'block';
+                        Swal.fire('สำเร็จ', 'เข้าสู่ระบบครูเรียบร้อย', 'success');
+                        renderTeacherTable(); // Render table after login
+                     } else {
+                        throw new Error(result.message);
+                     }
+                } catch (error) {
+                     Swal.fire('ผิดพลาด', 'รหัสผ่านไม่ถูกต้อง', 'error');
+                }
+            });
+            
+            // --- Refresh Button ---
+            refreshBtn.addEventListener('click', loadAllData);
+            
+            // --- Initial Data Load ---
+            loadAllData();
+        });
+
+        // --- Helper function to convert file to Base64 ---
+        const toBase64 = file => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
+
+        // --- Function to fetch all data from Google Sheet ---
+        async function loadAllData() {
+            Swal.fire({
+                title: 'กำลังโหลดข้อมูล...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading() }
+            });
+            try {
+                const response = await fetch(`${SCRIPT_URL}?action=read`);
+                allSubmissionsData = await response.json();
+                allSubmissionsData.sort((a,b) => new Date(b['วันเวลาที่ส่ง']) - new Date(a['วันเวลาที่ส่ง'])); // Sort by newest first
+                renderStatsDashboard();
+                if (isTeacherLoggedIn) {
+                    renderTeacherTable();
+                }
+                Swal.close();
+            } catch (error) {
+                Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถโหลดข้อมูลได้', 'error');
+            }
+        }
+        
+        // --- Function to render the statistics dashboard ---
+        function renderStatsDashboard() {
+            const totalSubmissions = allSubmissionsData.length;
+            const checkedSubmissions = allSubmissionsData.filter(d => d['สถานะ'] === '✅ ตรวจแล้ว').length;
+            const pendingSubmissions = allSubmissionsData.filter(d => d['สถานะ'] === '🟡 รอตรวจ').length;
+            
+            const scoredSubmissions = allSubmissionsData.filter(d => d['สถานะ'] === '✅ ตรวจแล้ว' && !isNaN(parseFloat(d['คะแนน'])));
+            const totalScore = scoredSubmissions.reduce((sum, d) => sum + parseFloat(d['คะแนน']), 0);
+            const averageScore = scoredSubmissions.length > 0 ? (totalScore / scoredSubmissions.length).toFixed(2) : 'N/A';
+
+            document.getElementById('total-submissions').textContent = totalSubmissions;
+            document.getElementById('checked-submissions').textContent = checkedSubmissions;
+            document.getElementById('pending-submissions').textContent = pendingSubmissions;
+            document.getElementById('average-score').textContent = averageScore;
+        }
+
+        // --- Function to render the teacher's grading table ---
+        function renderTeacherTable() {
+            const tbody = document.querySelector('#teacher-table tbody');
+            tbody.innerHTML = ''; // Clear existing rows
+            
+            if (allSubmissionsData.length === 0) {
+                 tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">ยังไม่มีการส่งงาน</td></tr>';
+                 return;
+            }
+            
+            allSubmissionsData.forEach(row => {
+                const tr = document.createElement('tr');
+                const submissionDate = new Date(row['วันเวลาที่ส่ง']);
+                const formattedDate = `${submissionDate.toLocaleDateString('th-TH')} ${submissionDate.toLocaleTimeString('th-TH')}`;
+
+                let fileLink = 'ไม่มี';
+                if(row['ไฟล์แนบ'] && row['ไฟล์แนบ'].startsWith('http')) {
+                    fileLink = `<a href="${row['ไฟล์แนบ']}" target="_blank">ดูไฟล์</a>`;
+                }
+                
+                const statusClass = row['สถานะ'] === '✅ ตรวจแล้ว' ? 'checked' : 'sent';
+                
+                tr.innerHTML = `
+                    <td>${formattedDate}</td>
+                    <td>${row['ชื่อ-นามสกุล']}</td>
+                    <td>${row['ชิ้นงานที่ส่ง']}</td>
+                    <td>${fileLink}</td>
+                    <td><span class="status ${statusClass}">${row['สถานะ']}</span></td>
+                    <td><input type="number" class="score-input" value="${row['คะแนน'] || ''}" placeholder="คะแนน"></td>
+                    <td><input type="text" class="comment-input" value="${row['ความคิดเห็นครู'] || ''}" placeholder="ความคิดเห็น"></td>
+                    <td><button class="update-btn" data-timestamp="${row['วันเวลาที่ส่ง']}">บันทึก</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+            
+            // Add event listeners to all new update buttons
+            document.querySelectorAll('.update-btn').forEach(btn => {
+                btn.addEventListener('click', handleUpdateScore);
+            });
+        }
+        
+        // --- Function to handle score/comment updates ---
+        async function handleUpdateScore(event) {
+            const btn = event.target;
+            const row = btn.closest('tr');
+            const score = row.querySelector('.score-input').value;
+            const comment = row.querySelector('.comment-input').value;
+            const timestamp = btn.dataset.timestamp;
+
+            btn.disabled = true;
+            btn.textContent = '...';
+
+            const searchParams = new URLSearchParams({
+                action: 'updateScore',
+                timestamp: timestamp,
+                score: score,
+                comment: comment
+            });
+
+            try {
+                const response = await fetch(SCRIPT_URL, { method: 'POST', body: searchParams });
+                const result = await response.json();
+                if (result.status === 'success') {
+                    Swal.fire('สำเร็จ', 'อัปเดตข้อมูลเรียบร้อย', 'success');
+                    // Update local data immediately for better UX
+                    const dataIndex = allSubmissionsData.findIndex(d => d['วันเวลาที่ส่ง'] === timestamp);
+                    if (dataIndex > -1) {
+                        allSubmissionsData[dataIndex]['คะแนน'] = score;
+                        allSubmissionsData[dataIndex]['ความคิดเห็นครู'] = comment;
+                        allSubmissionsData[dataIndex]['สถานะ'] = '✅ ตรวจแล้ว';
+                    }
+                    // Re-render everything
+                    renderStatsDashboard();
+                    renderTeacherTable();
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                Swal.fire('ผิดพลาด', 'ไม่สามารถอัปเดตข้อมูลได้: ' + error.message, 'error');
+                btn.disabled = false;
+                btn.textContent = 'บันทึก';
+            }
+        }
+
+    </script>
+</body>
+</html>
